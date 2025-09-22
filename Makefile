@@ -1,21 +1,31 @@
 
 NAME = inception
+COMPOSE = docker-compose -f srcs/docker-compose.yml -p $(NAME)
 
 all: up
 
 up:
-	docker-compose -p $(NAME) up -d --build
+	$(COMPOSE) up -d --build
 
 down:
-	docker-compose -p $(NAME) down
+	$(COMPOSE) down
 
-re: down up
+reup: down up
+
+start:
+	$(COMPOSE) start
+
+stop:
+	$(COMPOSE) stop
+
+restart:
+	$(COMPOSE) restart
 
 logs:
-	docker-compose -p $(NAME) logs -f
+	$(COMPOSE) logs -f
 
 ps:
-	docker-compose -p $(NAME) ps
+	$(COMPOSE) ps
 
 clean:
-	docker-compose -p $(NAME) down -v --rmi all --remove-orphans
+	$(COMPOSE) down -v --rmi all --remove-orphans
