@@ -11,29 +11,49 @@ services:
       - mariadb
     restart: always
     ports:
-      - "80:80"
+      - "443:443"
     volumes:
-      - ./web:/var/www/html
+      - /Users/joklein/data/wordpress:/var/www/html
+      - /Users/joklein/data/nginx/ssl:/etc/nginx/ssl
     networks:
       inception:
+
   wordpress:
     build: requirements/wordpress/.
     image: wordpress
-    container_name: wp-php
+    container_name: wordpress
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      WP_ADMIN_USER: ${WP_ADMIN_USER}
+      WP_ADMIN_PASS: ${WP_ADMIN_PASS}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
+      WP_EDITOR_USER: ${WP_EDITOR_USER}
+      WP_EDITOR_PASS: ${WP_EDITOR_PASS}
+      WP_EDITOR_EMAIL: ${WP_EDITOR_EMAIL}
     depends_on:
       - mariadb
     restart: always
     volumes:
-      - ./web:/var/www/html
+      - /Users/joklein/data/wordpress:/var/www/html
     networks:
       inception:
+
   mariadb:
     build: requirements/mariadb/.
     image: mariadb
     container_name: mariadb
     restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ./database:/var/lib/mysql
+      - /Users/joklein/data/mariadb:/var/lib/mysql
     networks:
       inception:
 
