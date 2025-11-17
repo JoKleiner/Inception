@@ -1,6 +1,6 @@
 
 NAME = inception
-COMPOSE = docker-compose -f srcs/docker-compose.yml -p $(NAME)
+COMPOSE = docker compose -f srcs/docker-compose.yml -p $(NAME)
 
 all: up
 
@@ -12,20 +12,5 @@ down:
 
 reup: down up
 
-start:
-	$(COMPOSE) start
-
-stop:
-	$(COMPOSE) stop
-
-restart:
-	$(COMPOSE) restart
-
 logs:
-	$(COMPOSE) logs -f
-
-ps:
-	$(COMPOSE) ps
-
-clean:
-	$(COMPOSE) down -v --rmi all --remove-orphans
+	$(COMPOSE) logs nginx wordpress mariadb

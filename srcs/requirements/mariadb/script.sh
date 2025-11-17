@@ -1,40 +1,32 @@
 #!/bin/bash
 
-set -e
+#stops if something went wrong, debugging
+set -e                 
 
-[ -f /run/secrets/db_password ] && MYSQL_PASSWORD="$(cat /run/secrets/db_password)"
-[ -f /run/secrets/db_root_password ] && MYSQL_ROOT_PASSWORD="$(cat /run/secrets/db_root_password)"
+#start MariaDB in background
+mysqld_safe &          
 
-: "${MYSQL_DATABASE:=wordpress}"
-: "${MYSQL_USER:=wpuser}"
+# Wait server is ready
+until mysqladmin ping --silent; do
+  sleep 1
+done
 
-mkdir -p /var/lib/mysql
-chown -R mysql:mysql /var/lib/mysql
+#read secrets
+MYSQL_PASSWORD=$(cat /run/secrets/db_password)
+MYSQL_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
+MYSQL_USER=${MYSQL_USER:-wordpress}
+MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
 
-if [ -z "$(ls -A /var/lib/mysql 2>/dev/null)" ]; then
-  mysql_install_db --user=mysql --datadir=/var/lib/mysql
-
-  mysqld_safe --datadir=/var/lib/mysql --skip-networking &
-  for i in $(seq 30); do
-    mysqladmin ping >/dev/null 2>&1 && break
-    sleep 1
-  done
-
-  mysql <<-EOSQL
-    CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
-    CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
-    GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
-    FLUSH PRIVILEGES;
+#create database
+mysql -u root -p"$MYSQL_ROOT_PASSWORD" <<-EOSQL
+  CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\`;
+  CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';
+  GRANT ALL PRIVILEGES ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USER'@'%';
+  FLUSH PRIVILEGES;
 EOSQL
 
-  if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
-    mysql <<-EOSQL
-      ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
-      FLUSH PRIVILEGES;
-EOSQL
-  fi
+#shutdown temporary server
+mysqladmin -u root -p"$MYSQL_ROOT_PASSWORD" shutdown    
 
-  mysqladmin shutdown || true
-fi
-
-exec mysqld --datadir=/var/lib/mysql --user=mysql
+#start mariaDB normally
+exec mysqld   

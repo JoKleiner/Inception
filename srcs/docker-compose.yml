@@ -1,58 +1,52 @@
-version: "3.8"
-
 services:
   nginx:
-    build: requirements/nginx/.
     image: nginx
-    container_name: nginx
+    build: ./requirements/nginx/.
     depends_on:
       - wordpress
-      - mariadb
     restart: always
     ports:
       - "443:443"
     volumes:
-      - /Users/joklein/data/wordpress:/var/www/html
-      - /Users/joklein/data/nginx/ssl:/etc/nginx/ssl
+      - wp_data:/var/www/html
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
     networks:
       - inception
 
   wordpress:
-    build: requirements/wordpress/.
     image: wordpress
-    container_name: wordpress
-    environment:
-      WORDPRESS_DB_HOST: mariadb:3306
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-      WORDPRESS_DB_USER: ${MYSQL_USER}
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      WP_ADMIN_USER: ${WP_ADMIN_USER}
-      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
-      WP_EDITOR_USER: ${WP_EDITOR_USER}
-      WP_EDITOR_EMAIL: ${WP_EDITOR_EMAIL}
+    build: ./requirements/wordpress/.
     depends_on:
       - mariadb
     restart: always
+    environment:
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_HOST: ${MYSQL_HOST}
+      DOMAIN_NAME: ${DOMAIN_NAME}
     volumes:
-      - /Users/joklein/data/wordpress:/var/www/html
+      - wp_data:/var/www/html
+      - ../secrets/db_password.txt:/run/secrets/db_password:ro
+      - ../secrets/credentials.txt:/run/secrets/credentials:ro
     secrets:
-      - wp_credentials
       - db_password
+      - credentials
     networks:
       - inception
 
   mariadb:
-    build: requirements/mariadb/.
     image: mariadb
-    container_name: mariadb
+    build: ./requirements/mariadb/.
     restart: always
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - /Users/joklein/data/mariadb:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
+      - ../secrets/db_password.txt:/run/secrets/db_password:ro
+      - ../secrets/db_root_password.txt:/run/secrets/db_root_password:ro
     secrets:
       - db_password
       - db_root_password
@@ -62,10 +56,19 @@ services:
 networks:
   inception:
 
+volumes:
+  wp_data:
+  mariadb_data:
+
 secrets:
   db_password:
     file: ../secrets/db_password.txt
   db_root_password:
     file: ../secrets/db_root_password.txt
-  wp_credentials:
+  credentials:
     file: ../secrets/credentials.txt
+
+# Nginx: receives request, serves files or forwards PHP to WordPress
+# WordPress: runs PHP, talks to MariaDB, builds page
+# MariaDB: MariaDB is the database backend for WordPress, answers WordPress queries
+# Flow: Browser -> Nginx -> WordPress -> MariaDB -> WordPress -> Nginx -> Browser

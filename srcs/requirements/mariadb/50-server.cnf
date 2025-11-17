@@ -1,22 +1,7 @@
 
-[server]
-
-[mysqld]
-user                    = root
-pid-file                = /run/mysqld/mysqld.pid
-basedir                 = /usr
-datadir                 = /var/lib/mysql
-tmpdir                  = /tmp
-
-bind-address            = 0.0.0.0
-
-expire_logs_days        = 10
-
-character-set-server  = utf8mb4
-collation-server      = utf8mb4_general_ci
-
-[embedded]
-
-[mariadb]
-
-[mariadb-10.11]
+[mysqld]                                            #settings for mariadb
+user                    = root                      
+bind-address            = 0.0.0.0                   #enable connection for all IP
+datadir                 = /var/lib/mysql            #main directory
+character-set-server    = utf8mb4                   #set character format, utf8mb4 = all Unicode characters
+collation-server        = utf8mb4_general_ci        #set sorting format, general_ci no Capital and small letters

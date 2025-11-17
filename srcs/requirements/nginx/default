@@ -1,27 +1,28 @@
 
 server
-{
-	listen 443 ssl default_server;
-	listen [::]:443 ssl default_server;
+{                                                       #ssl encrypting                               
+    listen 443 ssl;                           #listen to https_port (IPv4 Network)
+    listen [::]:443 ssl;                      #listen to https_port (IPv6 Network)
 
-	ssl_certificate /etc/nginx/ssl/nginx.crt;
-    ssl_certificate_key /etc/nginx/ssl/nginx.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_certificate /etc/nginx/ssl/nginx.crt;           #ssl path
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;       #ssl key_path
+    ssl_protocols TLSv1.2 TLSv1.3;                      #allowed ssl encrypting methods for client (Browser)
 
-	root /var/www/html;
-	index index.php index.html index.htm index.nginx-debian.html;
+    root /var/www/html;                                             #root directory
+    index index.php index.html index.htm index.nginx-debian.html;   #standard files (searching when from $uri/)
 
-	server_name joklein.42.fr;
+    server_name joklein.42.fr;
 
-	location /
-	{
-		try_files $uri $uri/ =404;
-	}
+    location /                                          #responds to all other request
+    {
+        try_files $uri $uri/ /index.php?$args;          #looking for uri(files), uri/(directory), return 404
+    }
 
-	location ~ \.php$
-	{
-		include snippets/fastcgi-php.conf;
-		fastcgi_pass wordpress:9000;
-		fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
-	}
+    location ~ \.php$                                   #responds directly to .php requests.
+    {
+        fastcgi_index index.php;                                                #default php file
+        include /etc/nginx/fastcgi_params;                                      #std config for nginx/php connection
+        fastcgi_pass wordpress:9000;                                            #Port for WP connection
+        fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;        #completes the path for php
+    }
 }
