@@ -12,7 +12,7 @@ services:
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
     networks:
-      - inception
+      - JonaNet
 
   wordpress:
     image: wordpress
@@ -33,7 +33,7 @@ services:
       - db_password
       - credentials
     networks:
-      - inception
+      - JonaNet
 
   mariadb:
     image: mariadb
@@ -51,10 +51,10 @@ services:
       - db_password
       - db_root_password
     networks:
-      - inception
+      - JonaNet
 
 networks:
-  inception:
+  JonaNet:
 
 volumes:
   wp_data:
