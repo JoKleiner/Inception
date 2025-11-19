@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e              #stops if something went wrong for debugging
 
-
 export WORDPRESS_DB_PASSWORD="$(cat /run/secrets/db_password)"
 export $(grep -v '^#' /run/secrets/credentials | xargs)
 
@@ -44,7 +43,7 @@ if [ ! -f wp-config.php ]; then
     --allow-root
 fi
 
-if ! wp user get "$WP_EDITOR_USER" --allow-root >/dev/null 2>&1; then
+if [ ! wp user get "$WP_EDITOR_USER" --allow-root >/dev/null 2>&1 ]; then
   wp user create "$WP_EDITOR_USER" "$WP_EDITOR_EMAIL" --user_pass="$WP_EDITOR_PASS" --role=editor --allow-root
 fi
 
