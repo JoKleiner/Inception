@@ -1,19 +1,16 @@
 #!/bin/bash
 set -e              #stops if something went wrong for debugging
 
-if [ -f /run/secrets/db_password ]; then
-    export WORDPRESS_DB_PASSWORD="$(cat /run/secrets/db_password)"
-fi
 
-if [ -f /run/secrets/credentials ]; then
-    export $(grep -v '^#' /run/secrets/credentials | xargs)
-fi
+export WORDPRESS_DB_PASSWORD="$(cat /run/secrets/db_password)"
+export $(grep -v '^#' /run/secrets/credentials | xargs)
 
 mkdir -p /var/www/html
 cd /var/www/html
 chown -R www-data:www-data /var/www/html || true
 
-if [ ! -f /usr/local/bin/wp ]; then                     #install WP shell extension WP-CLI
+#install WP shell extension WP-CLI
+if [ ! -f /usr/local/bin/wp ]; then                     
   curl -sSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp
   chmod +x /usr/local/bin/wp
 fi
@@ -45,6 +42,10 @@ if [ ! -f wp-config.php ]; then
     --admin_password="$WP_ADMIN_PASS" \
     --admin_email="$WP_ADMIN_EMAIL" \
     --allow-root
+fi
+
+if ! wp user get "$WP_EDITOR_USER" --allow-root >/dev/null 2>&1; then
+  wp user create "$WP_EDITOR_USER" "$WP_EDITOR_EMAIL" --user_pass="$WP_EDITOR_PASS" --role=editor --allow-root
 fi
 
 exec php-fpm8.2 -F

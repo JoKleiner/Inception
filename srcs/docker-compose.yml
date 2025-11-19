@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx
+    image: nginx:1.0
     build: ./requirements/nginx/.
     depends_on:
       - wordpress
@@ -15,7 +15,7 @@ services:
       - JonaNet
 
   wordpress:
-    image: wordpress
+    image: wordpress:1.0
     build: ./requirements/wordpress/.
     depends_on:
       - mariadb
@@ -36,7 +36,7 @@ services:
       - JonaNet
 
   mariadb:
-    image: mariadb
+    image: mariadb:1.0
     build: ./requirements/mariadb/.
     restart: always
     environment:
@@ -58,7 +58,17 @@ networks:
 
 volumes:
   wp_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/joklein/data/wp_data
   mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/joklein/data/mariadb_data
 
 secrets:
   db_password:
