@@ -1,6 +1,6 @@
 
 server
-{                                                       #ssl encrypting                               
+{                                             #ssl encrypting                               
     listen 443 ssl;                           #listen to https_port (IPv4 Network)
     listen [::]:443 ssl;                      #listen to https_port (IPv6 Network)
 
@@ -13,16 +13,16 @@ server
 
     server_name joklein.42.fr;
 
-    location /                                          #responds to all other request
-    {
-        try_files $uri $uri/ /index.php?$args;          #looking for uri(files), uri/(directory), return 404
-    }
-
     location ~ \.php$                                   #responds directly to .php requests.
     {
         fastcgi_index index.php;                                                #default php file
         include /etc/nginx/fastcgi_params;                                      #std config for nginx/php connection
         fastcgi_pass wordpress:9000;                                            #Port for WP connection
         fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;        #completes the path for php
+    }
+
+    location /                                          #responds to all other request
+    {
+        try_files $uri $uri/ /index.php?$args;          #looking for uri(files), uri/(directory), index.php
     }
 }

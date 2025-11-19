@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:1.0
+    image: nginx
     build: ./requirements/nginx/.
     depends_on:
       - wordpress
@@ -15,7 +15,7 @@ services:
       - JonaNet
 
   wordpress:
-    image: wordpress:1.0
+    image: wordpress
     build: ./requirements/wordpress/.
     depends_on:
       - mariadb
@@ -36,7 +36,7 @@ services:
       - JonaNet
 
   mariadb:
-    image: mariadb:1.0
+    image: mariadb
     build: ./requirements/mariadb/.
     restart: always
     environment:
@@ -77,8 +77,3 @@ secrets:
     file: ../secrets/db_root_password.txt
   credentials:
     file: ../secrets/credentials.txt
-
-# Nginx: receives request, serves files or forwards PHP to WordPress
-# WordPress: runs PHP, talks to MariaDB, builds page
-# MariaDB: MariaDB is the database backend for WordPress, answers WordPress queries
-# Flow: Browser -> Nginx -> WordPress -> MariaDB -> WordPress -> Nginx -> Browser
