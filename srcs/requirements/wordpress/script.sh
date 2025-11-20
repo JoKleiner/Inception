@@ -43,7 +43,7 @@ if [ ! -f wp-config.php ]; then
     --allow-root
 fi
 
-if [ ! wp user get "$WP_EDITOR_USER" --allow-root >/dev/null 2>&1 ]; then
+if ! wp user get "$WP_EDITOR_USER" --allow-root >/dev/null 2>&1; then
   wp user create "$WP_EDITOR_USER" "$WP_EDITOR_EMAIL" --user_pass="$WP_EDITOR_PASS" --role=editor --allow-root
 fi
 
